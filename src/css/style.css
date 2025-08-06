@@ -1,0 +1,155 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 2rem;
+  background-color: #f7f9fb;
+  color: #1e1e1e;
+}
+
+/* body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #f0f0f0;
+  margin: 0;
+  padding: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+} */
+
+.calendar-container {
+  width: 700px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.calendar-header {
+  background: #1e88e5;
+  color: white;
+  padding: 1rem;
+  text-align: center;
+  position: relative;
+}
+
+.calendar-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.calendar-header button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: white;
+  border: none;
+  color: #1e88e5;
+  font-weight: bold;
+  font-size: 1.2rem;
+  padding: 0.4rem 0.7rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+#prev-month {
+  left: 1rem;
+}
+#next-month {
+  right: 1rem;
+}
+.calendar-header button:hover {
+  background: #e3e3e3;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: #eee;
+}
+
+.day-name {
+  background: #ddd;
+  padding: 1rem;
+  text-align: center;
+  font-weight: bold;
+  border: 1px solid #ccc;
+}
+
+#calendar-days {
+  display: contents; /* Let grid flow into existing 7-column layout */
+}
+
+.calendar-day {
+  background: white;
+  border: 1px solid #ddd;
+  height: 100px;
+  padding: 0.5rem;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.calendar-day:hover {
+  background: #f0f8ff;
+}
+
+.calendar-day::after {
+  content: attr(data-date);
+  position: absolute;
+  top: 5px;
+  right: 10px;
+  font-size: 0.9rem;
+  color: #888;
+}
+
+.today {
+  background: #c8e6c9 !important;
+  border: 2px solid #2e7d32;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-content {
+  background: #fff;
+  padding: 1rem;
+  border-radius: 8px;
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.modal-content input {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+}
+
+.modal-content button {
+  padding: 0.5rem;
+  background: #1e88e5;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.close {
+  align-self: flex-end;
+  cursor: pointer;
+  font-size: 1.2rem;
+}

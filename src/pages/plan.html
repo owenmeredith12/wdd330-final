@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Interactive Calendar</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script type="module" src="/js/plan.js" defer></script>
+</head>
+<body>
+    <div id="main-header"></div>
+  <h1>Welcome to Trip Planner</h1>
+  <h2>Please select a date range for your trip</h2>
+  <input type="date" name="startDate" class="startDate" required>
+  <input type="date" name="endDate" class="endDate" required>
+  <div id="app"></div>
+  <div class="calendar-container">
+    <div class="calendar-header">
+      <button id="prev-month">←</button>
+      <h2 id="month-year"></h2>
+      <button id="next-month">→</button>
+    </div>
+    <div class="calendar-grid">
+      <div class="day-name">Sun</div>
+      <div class="day-name">Mon</div>
+      <div class="day-name">Tue</div>
+      <div class="day-name">Wed</div>
+      <div class="day-name">Thu</div>
+      <div class="day-name">Fri</div>
+      <div class="day-name">Sat</div>
+      <div id="calendar-days"></div>
+    </div>
+  </div>
+
+  <div id="eventModal" class="modal hidden">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h3 id="modalDate"></h3>
+    <input type="text" id="eventTitle" placeholder="Event title">
+    <input type="text" id="eventPlace" placeholder="Location">
+    <button id="saveEvent">Save</button>
+  </div>
+</div> 
+
+</body>
+<footer id="main-footer"></footer>
+</html>
