@@ -1,9 +1,4 @@
-import { renderHeader } from './components/header.js';
-import { loadHeaderFooter } from './utils.js';
 
-
-renderHeader();
-loadHeaderFooter();
 
 const calendarDays = document.getElementById("calendar-days");
 const monthYear = document.getElementById("month-year");
