@@ -1,5 +1,5 @@
-import { renderHeader } from 'components/header.js';
-import { loadHeaderFooter } from 'utils.js';
+import { renderHeader } from './components/header.js';
+import { loadHeaderFooter } from './utils.js';
 
 
 renderHeader();
