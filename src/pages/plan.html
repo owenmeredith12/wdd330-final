@@ -7,39 +7,21 @@
   <script type="module" src="../js/plan.js" defer></script>
 </head>
 <body>
-    <div id="main-header"></div>
-  <h2>Please select a date range for your trip</h2>
-  <input type="date" name="startDate" class="startDate" required>
-  <input type="date" name="endDate" class="endDate" required>
-  <div id="app"></div>
-  <div class="calendar-container">
-    <div class="calendar-header">
-      <button id="prev-month">←</button>
-      <h2 id="month-year"></h2>
-      <button id="next-month">→</button>
-    </div>
-    <div class="calendar-grid">  
-      <div class="day-name">Sun</div>
-      <div class="day-name">Mon</div>
-      <div class="day-name">Tue</div>
-      <div class="day-name">Wed</div>
-      <div class="day-name">Thu</div>
-      <div class="day-name">Fri</div>
-      <div class="day-name">Sat</div>
-      <div id="calendar-days"></div>
-    </div>
-  </div>
+    <header>
+  <h1>Trip Planner</h1>
+  <nav>
+    <a href="/">Home</a>
+    <a href="plan.html">Plan Trip</a>
+    <a href="suggestions.html">Suggestions</a>
+  </nav>
+</header>
 
-  <div id="eventModal" class="modal hidden">
-  <div class="modal-content">
-    <span class="close">&times;</span>
-    <h3 id="modalDate"></h3>
-    <input type="text" id="eventTitle" placeholder="Event title">
-    <input type="text" id="eventPlace" placeholder="Location">
-    <button id="saveEvent">Save</button>
-  </div>
-</div> 
-
+  <h2>Please list the number of days you are going to be on your trip</h2>
+  <label for="number of days">Days</label>
+  <input type="number" name="number of days" id="days">
+  <div id="daysView"></div>
+  <h2>Clothing suggestion</h2>
+  <div id="clothesSuggestion"></div>
 </body>
 <footer id="main-footer"></footer>
 </html>

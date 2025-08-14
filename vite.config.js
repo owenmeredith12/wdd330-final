@@ -11,6 +11,7 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'src/index.html'),
         plan: resolve(__dirname, 'src/pages/plan.html'),
+        suggestion: resolve(__dirname, 'src/pages/suggestions.html'),
       },
     },
   },

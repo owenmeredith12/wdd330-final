@@ -1,131 +1,174 @@
+const API_KEY = "67abd88567c24f259ac23735251108";
 
 
-const calendarDays = document.getElementById("calendar-days");
-const monthYear = document.getElementById("month-year");
-const prevBtn = document.getElementById("prev-month");
-const nextBtn = document.getElementById("next-month");
-
-let date = new Date();
-
-const events = {}
-
-function parseLocalDate(str) {
-  const [year, month, day] = str.split("-").map(Number);
-  return new Date(year, month - 1, day); // Correct for 0-based month
+function saveDaysToStorage() {
+  const allDays = readAllDays();
+  localStorage.setItem("tripDays", JSON.stringify(allDays));
+  return allDays; 
+}
+function loadDaysFromStorage() {
+  try { return JSON.parse(localStorage.getItem("tripDays") || "[]"); }
+  catch { return []; }
 }
 
-function openModal(dateStr) {
-  const modal = document.getElementById("eventModal");
-  const modalDate = document.getElementById("modalDate");
-  const titleInput = document.getElementById("eventTitle");
-  const placeInput = document.getElementById("eventPlace");
+function calcClothing(high, low, average) {
+  let suggestions = [];
 
-  // Prefill
-  modalDate.textContent = `Edit Events for ${dateStr}`;
-  titleInput.value = events[dateStr]?.title || "";
-  placeInput.value = events[dateStr]?.place || "";
 
-  // Show modal
-  modal.classList.remove("hidden");
+  if (low < 40) {
+    suggestions.push("Bring a heavy coat, gloves, and warm layers");
+  } else if (low < 55) {
+    suggestions.push("Pack a jacket or two and a pair of pants");
+  } else if (low < 65) {
+    suggestions.push("Bring a light jacket or sweater for cooler mornings/evenings");
+  }
 
-  // Save handler
-  document.getElementById("saveEvent").onclick = () => {
-    events[dateStr] = {
-      title: titleInput.value,
-      place: placeInput.value,
-    };
-    modal.classList.add("hidden");
-    renderDateRange(currentStartDate, currentEndDate); // re-render
-  };
+ 
+  if (high > 85) {
+    suggestions.push("Include light, breathable clothing and sunscreen");
+  } else if (average >= 65 && average <= 80) {
+    suggestions.push("Stick to mostly warm-weather clothes");
+  }
+
+  
+  if (average < 65 && low >= 55 && high <= 75) {
+    suggestions.push("Mix of light sweaters and short sleeves");
+  }
+
+  
+  return suggestions.join(". ") + ".";
 }
 
-function renderDateRange(startDateStr, endDateStr) {
-  const calendarDays = document.getElementById("calendar-days");
-  const monthYear = document.getElementById("month-year");
 
-  // Convert to Date objects
-const startDate = parseLocalDate(startDateStr);
-const endDate = parseLocalDate(endDateStr);
-
-  // Clear existing content
-  calendarDays.innerHTML = "";
-
-  // Set header title
-  const startMonth = startDate.toLocaleString("default", { month: "long" });
-  const endMonth = endDate.toLocaleString("default", { month: "long" });
-  const sameMonth = startMonth === endMonth && startDate.getFullYear() === endDate.getFullYear();
-
-  monthYear.textContent = sameMonth
-    ? `${startMonth} ${startDate.getFullYear()}`
-    : `${startMonth} ${startDate.getFullYear()} - ${endMonth} ${endDate.getFullYear()}`;
-
-  const days = [];
-  const current = new Date(startDate);
-  current.setHours(0, 0, 0, 0); // Normalize time
-
-  // Create list of date objects
-  while (current <= endDate) {
-    days.push(new Date(current));
-    current.setDate(current.getDate() + 1);
-  }
-
-  // Add empty boxes before the first day to align weekday
-  const firstDayWeekday = days[0].getDay(); // 0 = Sunday
-  for (let i = 0; i < firstDayWeekday; i++) {
-    const empty = document.createElement("div");
-    calendarDays.appendChild(empty);
-  }
-
-  // Add each day cell
-  days.forEach(dateObj => {
-    const dayBox = document.createElement("div");
-    dayBox.classList.add("calendar-day");
-    dayBox.setAttribute("data-date", dateObj.getDate());
-
-    const isToday = new Date().toDateString() === dateObj.toDateString();
-    if (isToday) dayBox.classList.add("today");
-
-    dayBox.addEventListener("click", () => {
-      const yyyyMMdd = dateObj.toISOString().split("T")[0]; // "YYYY-MM-DD"
-
-        dayBox.addEventListener("click", () => {
-        openModal(yyyyMMdd);
-        });
-    });
-
-    document.querySelector(".close").addEventListener("click", () => {
-    document.getElementById("eventModal").classList.add("hidden");
-});
-
-    calendarDays.appendChild(dayBox);
+function readAllDays() {
+  const rows = document.querySelectorAll("#daysView .day");
+  return Array.from(rows).map(row => {
+    const date = row.querySelector('input[name$="[date]"]')?.value || "";
+    const location = row.querySelector('input[name$="[location]"]')?.value || "";
+    return { date, location };
   });
 }
 
-function getDateRange() {
-  const startDateInput = document.querySelector(".startDate");
-  const endDateInput = document.querySelector(".endDate");
 
-  let selectedStartDate = null;
-  let selectedEndDate = null;
+function ensureWeatherSlot(row) {
+  let el = row.querySelector(".weather");
+  if (!el) {
+    el = document.createElement("div");
+    el.className = "weather";
+    el.style.marginTop = "0.5rem";
+    row.appendChild(el);
+  }
+  return el;
+}
 
-  function tryRender() {
-    if (selectedStartDate && selectedEndDate) {
-      renderDateRange(selectedStartDate, selectedEndDate);
+
+async function getWeatherData() {
+  const days = readAllDays();
+  const rows = document.querySelectorAll("#daysView .day");
+  let tripAvg = 0
+  let count = 0
+  let high = 0
+  let low = 150
+  for (let i = 0; i < days.length; i++) {
+    const day = days[i];
+    if (!day.date || !day.location) continue;
+
+    const row = rows[i];
+    const slot = ensureWeatherSlot(row);
+    slot.textContent = "Loading…";
+
+    const url = `https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${encodeURIComponent(day.location)}&dt=${day.date}`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    const avgF = data?.forecast?.forecastday?.[0]?.day?.avgtemp_f;
+
+    tripAvg += avgF
+    count ++
+
+    if(avgF >= high){
+      high = avgF
     }
+
+    if (avgF <= low){
+      low = avgF
+    }
+
+    slot.textContent = (avgF != null)
+      ? `Weather for ${day.date}: ${avgF}°F`
+      : `No forecast found`;
+
+
   }
-
-  startDateInput.addEventListener("change", function () {
-    selectedStartDate = this.value;
-    tryRender();
-  });
-
-  endDateInput.addEventListener("change", function () {
-    selectedEndDate = this.value;
-    tryRender();
-  });
+    let average = tripAvg/count
+    console.log(tripAvg/count)
+    console.log(high,low)
+    let clothingSuggestion = calcClothing(high, low, average);
+    const suggestion = document.querySelector("#clothesSuggestion");
+    suggestion.innerHTML = `<p>Average Temperature: ${average}</p>
+    <p>High: ${high}</p>
+    <p>Low: ${low}</p>
+    <p>Clothing Suggestion: ${clothingSuggestion}</p>`
+ 
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  getDateRange();
+
+function showDays(count) {
+  const container = document.getElementById("daysView");
+  const n = parseInt(count, 10) || 0;
+
+ 
+  const domSaved = Array.from(container.querySelectorAll(".day")).map((dayEl, i) => ({
+    date: dayEl.querySelector(`[name="days[${i}][date]"]`)?.value || "",
+    location: dayEl.querySelector(`[name="days[${i}][location]"]`)?.value || ""
+  }));
+  const lsSaved = loadDaysFromStorage();
+
+  container.innerHTML = "";
+
+  for (let i = 0; i < n; i++) {
+    const wrapper = document.createElement("fieldset");
+    wrapper.className = "day";
+    wrapper.innerHTML = `
+      <legend>Day ${i + 1}</legend>
+      <label>
+        Date
+        <input type="date" name="days[${i}][date]" id="day${i}" required>
+      </label>
+      <label>
+        Location
+        <input type="text" name="days[${i}][location]" placeholder="City or venue" id="place${i}" required>
+      </label>
+    `;
+
+    // restore (DOM wins, else localStorage)
+    const v = domSaved[i] || lsSaved[i] || {};
+    if (v.date)     wrapper.querySelector(`[name="days[${i}][date]"]`).value = v.date;
+    if (v.location) wrapper.querySelector(`[name="days[${i}][location]"]`).value = v.location;
+
+
+    wrapper.appendChild(Object.assign(document.createElement("div"), { className: "weather" }));
+
+    container.appendChild(wrapper);
+  }
+}
+
+
+document.getElementById("days").addEventListener("input", (e) => {
+  showDays(e.target.value);
+  saveDaysToStorage();
+  let data = saveDaysToStorage();
+  console.log(data)
+
 });
 
+
+let t;
+document.getElementById("daysView").addEventListener("input", (e) => {
+  if (!e.target.matches('input[type="date"], input[name$="[location]"]')) return;
+  saveDaysToStorage();
+  clearTimeout(t);
+  t = setTimeout(() => getWeatherData(), 300);
+  let data = saveDaysToStorage();
+  console.log(data)
+});
