@@ -13,7 +13,41 @@ function uniqueCities(days) {
   return [...new Set(days.map(d => (d.location || "").trim()).filter(Boolean))];
 }
 
+function saveSuggestionsToStorage(city, restaurants, attractions) {
+  const stored = JSON.parse(localStorage.getItem("tripSuggestions") || "{}");
+  stored[city] = {
+    restaurants,
+    attractions,
+    timestamp: Date.now()
+  };
+  localStorage.setItem("tripSuggestions", JSON.stringify(stored));
+}
 
+function clearSkeletons(sectionId = "suggestions") {
+  const container = document.getElementById(sectionId);
+  if (!container) return;
+  container.querySelectorAll(".skeleton").forEach(el => el.remove());
+}
+
+function renderSuggestions(places, { sectionId = "suggestions" } = {}) {
+  const container = document.getElementById(sectionId);
+  if (!container) return;
+
+  clearSkeletons(sectionId);          // <- remove leftover shimmer blocks
+  container.innerHTML = "";           // <- or nuke everything if you prefer
+  places.forEach(p => container.appendChild(placeCard(p)));
+}
+
+function setLoading(sectionId = "suggestions", count = 3) {
+  const container = document.getElementById(sectionId);
+  if (!container) return;
+  container.innerHTML = ""; // clear anything that was there
+  for (let i = 0; i < count; i++) {
+    const skel = document.createElement("div");
+    skel.className = "skeleton suggestion-card";
+    container.appendChild(skel);
+  }
+}
 
 // Minimal Text Search call
 async function searchText(query) {
@@ -83,6 +117,11 @@ function appendSuggestion(item, { sectionId = "suggestions", city = "" } = {}) {
   container.appendChild(card);
 }
 
+function loadSuggestionsFromStorage(city) {
+  const stored = JSON.parse(localStorage.getItem("tripSuggestions") || "{}");
+  return stored[city] || null;
+}
+
 function selectFromList(options, { sectionId = "suggestions" } = {}) {
   if (!Array.isArray(options) || options.length === 0) return;
   const i = Math.floor(Math.random() * options.length);
@@ -90,12 +129,13 @@ function selectFromList(options, { sectionId = "suggestions" } = {}) {
 }
 
 (async () => {
+  setLoading("suggestions",4)
   const cities = uniqueCities(loadDaysFromStorage());
 
   for (const city of cities) {
     const restaurants = await searchText(`best restaurants in ${city}`);
     const attractions = await searchText(`top tourist attractions in ${city}`);
-
+    saveSuggestionsToStorage(city, restaurants, attractions);
 
 
     console.group(`Results for ${city}`);

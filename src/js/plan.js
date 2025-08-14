@@ -35,8 +35,8 @@ function calcClothing(high, low, average) {
     suggestions.push("Mix of light sweaters and short sleeves");
   }
 
-  
   return suggestions.join(". ") + ".";
+
 }
 
 
